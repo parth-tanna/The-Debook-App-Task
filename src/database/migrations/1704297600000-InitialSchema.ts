@@ -13,7 +13,8 @@ export class InitialSchema1704297600000 implements MigrationInterface {
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
         "username" varchar NOT NULL UNIQUE,
         "email" varchar NOT NULL UNIQUE,
-        "created_at" TIMESTAMP NOT NULL DEFAULT now()
+        "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP NOT NULL DEFAULT now()
       )
     `);
 
@@ -29,7 +30,7 @@ export class InitialSchema1704297600000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "posts" (
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-        "user_id" varchar NOT NULL,
+        "user_id" uuid NOT NULL,
         "content" text NOT NULL,
         "likes_count" integer NOT NULL DEFAULT 0,
         "comments_count" integer NOT NULL DEFAULT 0,
@@ -51,9 +52,10 @@ export class InitialSchema1704297600000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "likes" (
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-        "user_id" varchar NOT NULL,
-        "post_id" varchar NOT NULL,
+        "user_id" uuid NOT NULL,
+        "post_id" uuid NOT NULL,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "UQ_likes_user_post" UNIQUE ("user_id", "post_id")
       )
     `);
@@ -79,7 +81,7 @@ export class InitialSchema1704297600000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "notifications" (
         "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-        "user_id" varchar NOT NULL,
+        "user_id" uuid NOT NULL,
         "type" "notification_type_enum" NOT NULL,
         "data" jsonb NOT NULL,
         "read" boolean NOT NULL DEFAULT false,

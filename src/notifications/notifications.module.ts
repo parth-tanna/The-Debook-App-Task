@@ -6,6 +6,7 @@ import { NotificationsService } from './services/notifications.service';
 import { NotificationsController } from './controllers/notifications.controller';
 import { NotificationsProcessor } from './processors/notifications.processor';
 import { NotificationsListener } from './listeners/notifications.listener';
+import { UsersModule } from '../users/users.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { NotificationsListener } from './listeners/notifications.listener';
         BullModule.registerQueue({
             name: 'notifications',
         }),
+        UsersModule,
     ],
     controllers: [NotificationsController],
     providers: [

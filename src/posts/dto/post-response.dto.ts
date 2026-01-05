@@ -22,6 +22,9 @@ export class PostResponseDto {
     @ApiProperty()
     updatedAt: Date;
 
+    @ApiProperty({ example: true, description: 'Whether the current user has liked this post' })
+    isLiked?: boolean;
+
     constructor(partial: Partial<PostResponseDto>) {
         Object.assign(this, partial);
     }

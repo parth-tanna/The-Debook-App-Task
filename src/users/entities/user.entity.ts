@@ -3,8 +3,13 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
+    UpdateDateColumn,
     Index,
+    OneToMany,
 } from 'typeorm';
+import { Post } from '../../posts/entities/post.entity';
+import { Like } from '../../likes/entities/like.entity';
+import { Notification } from '../../notifications/entities/notification.entity';
 
 @Entity('users')
 export class User {
@@ -21,4 +26,16 @@ export class User {
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
+
+    @UpdateDateColumn({ name: 'updated_at' })
+    updatedAt: Date;
+
+    @OneToMany(() => Post, (post) => post.user)
+    posts: Post[];
+
+    @OneToMany(() => Like, (like) => like.user)
+    likes: Like[];
+
+    @OneToMany(() => Notification, (notification) => notification.user)
+    notifications: Notification[];
 }

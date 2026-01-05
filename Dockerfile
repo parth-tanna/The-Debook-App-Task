@@ -5,6 +5,16 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
+# Add entrypoint script
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+# Use entrypoint to run migrations
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
+# Default command for dev
+CMD ["npm", "run", "start:dev"]
+
 # Build stage
 FROM development AS builder
 RUN npm run build
@@ -20,13 +30,12 @@ COPY package*.json ./
 RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
-
-# Copy migrations if they are not compiled into dist (they are in dist, so this is fine)
-# But we might need the TS config if we run migrations via ts-node, 
-# strictly for production we should run migrations from JS files.
-# For simplicity, we'll copy the dist folder which contains migrations.
+COPY --from=builder /app/docker-entrypoint.sh ./
 
 EXPOSE 3000
 
-# Start command
+# Use entrypoint to run migrations
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
+# Default command
 CMD ["node", "dist/main"]

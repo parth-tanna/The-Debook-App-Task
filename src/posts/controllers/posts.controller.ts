@@ -60,6 +60,7 @@ export class PostsController {
     @ApiExtraModels(PaginatedResponseDto, PostResponseDto)
     @ApiPaginatedResponse(PostResponseDto)
     async getAllPosts(
+        @UserId() userId: string,
         @Query('page') page: number = 1,
         @Query('limit') limit: number = 20,
     ): Promise<PaginatedResponseDto<PostResponseDto>> {
@@ -67,7 +68,7 @@ export class PostsController {
         const limitNumber = Number(limit) || 20;
         const offset = (pageNumber - 1) * limitNumber;
 
-        const [items, total] = await this.postsService.getAllPosts(limitNumber, offset);
+        const [items, total] = await this.postsService.getAllPosts(limitNumber, offset, userId);
 
         return new PaginatedResponseDto(items, total, pageNumber, limitNumber);
     }
@@ -75,8 +76,11 @@ export class PostsController {
     @Get(':id')
     @ApiOperation({ summary: 'Get a post by ID' })
     @ApiResponse({ status: 200, description: 'Return the post', type: ApiResponseDto })
-    async getPostById(@Param('id') id: string): Promise<ApiResponseDto<PostResponseDto>> {
-        const post = await this.postsService.getPostById(id);
+    async getPostById(
+        @UserId() userId: string,
+        @Param('id') id: string,
+    ): Promise<ApiResponseDto<PostResponseDto>> {
+        const post = await this.postsService.getPostById(id, userId);
         return new ApiResponseDto('success', 'Post fetched successfully', post);
     }
 }

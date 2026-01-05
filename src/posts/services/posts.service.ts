@@ -1,15 +1,18 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from '../entities/post.entity';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { PostResponseDto } from '../dto/post-response.dto';
+import { LikesService } from '../../likes/services/likes.service';
 
 @Injectable()
 export class PostsService {
     constructor(
         @InjectRepository(Post)
         private readonly postsRepository: Repository<Post>,
+        @Inject(forwardRef(() => LikesService))
+        private readonly likesService: LikesService,
     ) { }
 
     private readonly logger = new Logger(PostsService.name);
@@ -36,8 +39,8 @@ export class PostsService {
         }
     }
 
-    async getAllPosts(limit: number = 20, offset: number = 0): Promise<[PostResponseDto[], number]> {
-        this.logger.log(`Executing get all posts | Limit: ${limit} | Offset: ${offset}`);
+    async getAllPosts(limit: number = 20, offset: number = 0, userId?: string): Promise<[PostResponseDto[], number]> {
+        this.logger.log(`Executing get all posts | Limit: ${limit} | Offset: ${offset} | User: ${userId || 'anonymous'}`);
         try {
             const [posts, total] = await this.postsRepository.findAndCount({
                 order: { createdAt: 'DESC' },
@@ -45,16 +48,27 @@ export class PostsService {
                 skip: offset,
             });
 
+            const postDtos = posts.map(post => new PostResponseDto(post));
+
+            // Populate isLiked if userId is provided
+            if (userId && posts.length > 0) {
+                const postIds = posts.map(post => post.id);
+                const likedPostIds = await this.likesService.getLikedPostIds(userId, postIds);
+                postDtos.forEach(dto => {
+                    dto.isLiked = likedPostIds.has(dto.id);
+                });
+            }
+
             this.logger.log(`Successfully retrieved ${posts.length} posts | Total: ${total}`);
-            return [posts.map(post => new PostResponseDto(post)), total];
+            return [postDtos, total];
         } catch (error) {
             this.logger.error(`Error executing get all posts`, error.stack);
             throw error;
         }
     }
 
-    async getPostById(postId: string): Promise<PostResponseDto> {
-        this.logger.log(`Post: ${postId} | Executing get post by ID`);
+    async getPostById(postId: string, userId?: string): Promise<PostResponseDto> {
+        this.logger.log(`Post: ${postId} | User: ${userId || 'anonymous'} | Executing get post by ID`);
         try {
             // Efficient query - no joins, just get the post with denormalized counters
             const post = await this.postsRepository.findOne({
@@ -66,8 +80,15 @@ export class PostsService {
                 throw new NotFoundException(`Post with ID ${postId} not found`);
             }
 
+            const dto = new PostResponseDto(post);
+
+            // Populate isLiked if userId is provided
+            if (userId) {
+                dto.isLiked = await this.likesService.hasUserLikedPost(userId, postId);
+            }
+
             this.logger.log(`Post: ${postId} | Successfully retrieved post`);
-            return new PostResponseDto(post);
+            return dto;
         } catch (error) {
             if (error instanceof NotFoundException) throw error;
             this.logger.error(`Post: ${postId} | Error executing get post by ID`, error.stack);

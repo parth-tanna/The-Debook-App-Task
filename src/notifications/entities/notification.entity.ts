@@ -4,7 +4,10 @@ import {
     Column,
     CreateDateColumn,
     Index,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 export enum NotificationType {
     POST_LIKED = 'post_liked',
@@ -17,8 +20,12 @@ export class Notification {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ name: 'user_id' })
+    @Column({ name: 'user_id', type: 'uuid' })
     userId: string;
+
+    @ManyToOne(() => User, (user) => user.notifications)
+    @JoinColumn({ name: 'user_id' })
+    user: User;
 
     @Column({
         type: 'enum',

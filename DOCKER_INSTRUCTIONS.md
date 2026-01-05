@@ -6,26 +6,15 @@ I have Dockerized the application so you can run the entire stack (App, Postgres
 
 This runs the NestJS API, PostgreSQL, and Redis in isolated containers.
 
-1.  **Start Everything (Recommended)**:
-    Use the automated scripts to start containers and run migrations:
-    ```bash
-    # Windows
-    ./start-docker.ps1
+1.  **Start Everything**:
+    The application is configured to run entirely via Docker Compose. Ensure your `.env` file is populated with the necessary values (see `.env.example`).
 
-    # Linux/Mac
-    bash start-docker.sh
-    ```
-
-    *Alternatively, use standard docker command:*
     ```bash
     docker compose up -d --build
     ```
 
-2.  **Run Migrations** (Internal):
-    *Note: The helper scripts automate this. If running manually via docker compose:*
-    ```bash
-    docker compose exec app npm run migration:run
-    ```
+2.  **Automatic Migrations**:
+    The API container uses `docker-entrypoint.sh` to run migrations automatically before starting the NestJS application. There is no need for manual migration steps during initial setup.
 
 3.  **Access API**:
     The API will be available at `http://localhost:3000`.
@@ -34,13 +23,12 @@ This runs the NestJS API, PostgreSQL, and Redis in isolated containers.
 
 If you prefer to use your locally installed PostgreSQL instead of the Docker container:
 
-1.  **Update `docker-compose.yml`**:
-    Change the `DATABASE_HOST` environment variable for the `app` service:
-    ```yaml
-    environment:
-      - DATABASE_HOST=host.docker.internal # Connects to host machine's localhost
-      # ... other vars ...
-    ```
+1.  **Host Configuration**:
+    The Docker setup now uses dedicated variables to avoid conflicts with your local development environment:
+    - `DOCKER_DATABASE_HOST` (defaults to `postgres`)
+    - `DOCKER_REDIS_HOST` (defaults to `redis`)
+    
+    This ensures that even if your `DATABASE_HOST` is set to `localhost` in `.env`, the Docker container will use the correct service name to connect.
 
     *Note: You may need to ensure your local Postgres is listening on all interfaces (check `postgresql.conf` -> `listen_addresses = '*'`) and `pg_hba.conf` allows connections.*
 

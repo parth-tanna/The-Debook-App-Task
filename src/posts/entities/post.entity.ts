@@ -6,16 +6,28 @@ import {
     UpdateDateColumn,
     Index,
     VersionColumn,
+    ManyToOne,
+    OneToMany,
+    JoinColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
+import { Like } from '../../likes/entities/like.entity';
 
 @Entity('posts')
 export class Post {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ name: 'user_id' })
+    @Column({ name: 'user_id', type: 'uuid' })
     @Index()
     userId: string;
+
+    @ManyToOne(() => User, (user) => user.posts)
+    @JoinColumn({ name: 'user_id' })
+    user: User;
+
+    @OneToMany(() => Like, (like) => like.post)
+    likes: Like[];
 
     @Column('text')
     content: string;

@@ -21,12 +21,9 @@ The easiest way to run the application is using Docker.
 
 1.  **Start Services**:
     ```bash
-    # Windows (Git Bash / PowerShell)
-    bash start-docker.sh
-    # OR
-    ./start-docker.ps1
+    docker compose up -d --build
     ```
-    This script will start the containers and run the database migrations automatically.
+    This command will start the containers and run the database migrations automatically via the entrypoint script.
 
 2.  **Verify**:
     The API will be running at `http://localhost:3000`.
@@ -59,6 +56,21 @@ If you prefer to run Node.js locally:
 
 ## API Endpoints
 
+### Posts
+- `POST /v1/posts`: Create a new post.
+- `GET /v1/posts`: Get all posts (paginated).
+- `GET /v1/posts/:id`: Get a post by ID.
+
+### Likes
+- `POST /v1/posts/:postId/likes`: Like a post.
+- `DELETE /v1/posts/:postId/likes`: Unlike a post.
+- `GET /v1/posts/:postId/likes`: Get users who liked a post (paginated).
+
+### Notifications
+- `GET /v1/notifications`: Get user notifications (paginated).
+- `PATCH /v1/notifications/:id/read`: Mark notification as read.
+- `GET /v1/notifications/unread/count`: Get unread count.
+
 Authentication is simulated via the `x-user-id` header.
 Use the following seed user IDs for testing:
 - Alice: `a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11`
@@ -67,12 +79,6 @@ Use the following seed user IDs for testing:
 Detailed API documentation and interactive testing are available via Swagger at `http://localhost:3000/api`.
 
 ## Testing
-
-**Integration Test (Recommended)**
-Runs a full scenario (Create Post -> Like -> Verify Counter -> Verify Notification):
-```bash
-node test/api-test.js
-```
 
 **Unit Tests**:
 ```bash

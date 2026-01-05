@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { PostsModule } from './posts/posts.module';
 import { LikesModule } from './likes/likes.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UsersModule } from './users/users.module';
 
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
@@ -52,6 +53,7 @@ import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
     PostsModule,
     LikesModule,
     NotificationsModule,
+    UsersModule,
   ],
 })
 export class AppModule { }
